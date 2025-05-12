@@ -37,6 +37,15 @@
     "prettier": "^3.5.3",
     "typescript": "^5.8.2"
   },
+  "preferences": [
+    {
+      "name": "notion_secret",
+      "type": "password",
+      "title": "Notion Integration Secret",
+      "description": "Enter your Notion integration secret token. This is used to authenticate API requests to your Notion workspace.",
+      "required": true
+    }
+  ],
   "scripts": {
     "build": "ray build",
     "dev": "ray develop",
