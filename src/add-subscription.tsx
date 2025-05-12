@@ -42,13 +42,25 @@ export default function Command() {
       },
       priority: FormValidation.Required,
     },
-    onSubmit(values) {
+    async onSubmit(values) {
+      // Format values for Notion API
       const formattedValues = { ...values, price: Number(values.price) };
-      showToast({
-        style: Toast.Style.Success,
-        title: "Subscription added",
-        message: `${values.subscription} added to Notion.`,
-      });
+      try {
+        // Create a new page in Notion using the API helper from utils
+        const { createSubscriptionPage } = await import("./notion-utils/createSubscriptionPage");
+        await createSubscriptionPage(formattedValues);
+        showToast({
+          style: Toast.Style.Success,
+          title: "Subscription added",
+          message: `${values.subscription} added to Notion.`,
+        });
+      } catch (error) {
+        showToast({
+          style: Toast.Style.Failure,
+          title: "Failed to add subscription",
+          message: String(error),
+        });
+      }
       console.log(formattedValues);
     },
   });
@@ -74,7 +86,7 @@ function SubscriptionDetailsSection({ itemProps }: { itemProps: any }) {
   return (
     <>
       <Form.Description text="Add a new subscription" />
-      <Form.TextField placeholder="Adobe CC" {...itemProps.subscription} />
+      <Form.TextField placeholder="Name of your subscription" {...itemProps.subscription} />
     </>
   );
 }
@@ -84,6 +96,7 @@ function PaymentDetailsSection({ itemProps }: { itemProps: any }) {
   return (
     <>
       <Form.Description text="Payment details" />
+      <Form.TextField title="Price (US$)" placeholder="20.00" {...itemProps.price} />
       <Form.DatePicker
         type={Form.DatePicker.Type.Date}
         title="First payment"
@@ -94,7 +107,6 @@ function PaymentDetailsSection({ itemProps }: { itemProps: any }) {
         <Form.Dropdown.Item value="Monthly" title="Monthly" />
         <Form.Dropdown.Item value="Annually" title="Annually" />
       </Form.Dropdown>
-      <Form.TextField title="Price (US$)" placeholder="20.00" {...itemProps.price} />
     </>
   );
 }
@@ -107,7 +119,7 @@ function StatusSection({ itemProps }: { itemProps: any }) {
       <Form.TagPicker title="Status" {...itemProps.status}>
         <Form.TagPicker.Item value="Active" title="Active" icon={{ source: Icon.CheckCircle, tintColor: Color.Green }} />
         <Form.TagPicker.Item value="Trial" title="On trial" icon={{ source: Icon.Clock, tintColor: Color.Yellow }} />
-        <Form.TagPicker.Item value="Inactive" title="Not in use" icon={{ source: Icon.CircleDisabled, tintColor: Color.SecondaryText }} />
+        <Form.TagPicker.Item value="Inactive" title="Not in use" icon={{ source: Icon.CircleDisabled }} />
       </Form.TagPicker>
     </>
   );
