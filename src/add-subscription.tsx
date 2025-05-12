@@ -90,7 +90,7 @@ function PaymentDetailsSection({ itemProps }: { itemProps: any }) {
         info="Assumes a 14-day free trial"
         {...itemProps.startDate}
       />
-      <Form.Dropdown title="Billing cycle" defaultValue="Monthly" {...itemProps.billingCycle}>
+      <Form.Dropdown title="Billing cycle" {...itemProps.billingCycle}>
         <Form.Dropdown.Item value="Monthly" title="Monthly" />
         <Form.Dropdown.Item value="Annually" title="Annually" />
       </Form.Dropdown>
@@ -116,7 +116,7 @@ function StatusSection({ itemProps }: { itemProps: any }) {
 // Section: Priority dropdown
 function PrioritySection({ itemProps }: { itemProps: any }) {
   return (
-    <Form.Dropdown title="Priority" defaultValue="Low" {...itemProps.priority}>
+    <Form.Dropdown title="Priority" {...itemProps.priority}>
       <Form.Dropdown.Item value="High" title="High" />
       <Form.Dropdown.Item value="Low" title="Low" />
     </Form.Dropdown>

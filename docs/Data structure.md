@@ -12,12 +12,12 @@ The Notion database serves as the single source of truth for all software subscr
 - **Annual cost:** Formula — Automatically calculates the yearly cost based on the billing cycle and price.
     - If billing cycle is "Annually": Annual cost = Price
     - If billing cycle is "Monthly": Annual cost = Price × 12
-- **Billed on:** Select (e.g., 10th of the month) — The day of the month when the subscription is billed.
+- **Start date:** Date — The date the subscription begins. Entered via a date picker in Raycast and stored as a date in Notion.
 
 ## Example Entry
-| Subscription | Priority | Billing cycle | Status  | Price | Annual cost | Billed on        |
+| Subscription | Priority | Billing cycle | Status  | Price | Annual cost | Start date       |
 |--------------|---------|--------------|---------|-------|-------------|------------------|
-| Adobe CC     | High    | Monthly      | Active  | $20   | $240        | 10th of the month|
+| Adobe CC     | High    | Monthly      | Active  | $20   | $240        | 2025-05-10       |
 
 ## Implementation Notes
 - The formula for annual cost ensures all subscriptions are normalized to a yearly expense for better financial planning.
