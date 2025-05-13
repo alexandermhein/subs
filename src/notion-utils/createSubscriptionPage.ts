@@ -2,9 +2,9 @@ import { NOTION_DATABASE_ID, getNotionHeaders } from "./constants";
 
 export type SubscriptionFormValues = {
   subscription: string;
-  priority: string;
+  useCase: "Work" | "Personal";
   billingCycle: string;
-  status: string[];
+  status: string;
   price: string | number;
   startDate: Date | null;
 };
@@ -24,15 +24,15 @@ export async function createSubscriptionPage(values: SubscriptionFormValues) {
         },
       ],
     },
-    Priority: {
-      select: { name: values.priority },
+    "Use case": {
+      select: { name: values.useCase },
     },
     "Billing cycle": {
       select: { name: values.billingCycle },
     },
     // Status is a select property (not multi_select) in the Notion schema
     Status: {
-      select: { name: values.status[0] }, // Only one value allowed
+      select: { name: values.status },
     },
     Price: {
       number: typeof values.price === "string" ? Number(values.price) : values.price,

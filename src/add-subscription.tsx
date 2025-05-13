@@ -1,12 +1,14 @@
-import { Form, ActionPanel, Action, showToast, Toast, Icon, Color } from "@raycast/api";
+import { Form, ActionPanel, Action, Icon, Color } from "@raycast/api";
 import { useForm, FormValidation } from "@raycast/utils";
+import { useState } from "react";
+import { handleAddSubscription, validatePrice, validateStartDate, validateStatus } from "./notion-utils/addSubscription";
 
 // Define the form values to match the Notion database structure
-interface SubscriptionFormValues {
+export interface SubscriptionFormValues {
   subscription: string;
-  priority: string;
+  useCase: "Work" | "Personal";
   billingCycle: string;
-  status: string[]; // Now an array for TagPicker
+  status: string; // Single value for Dropdown
   price: string;
   startDate: Date | null;
 }
@@ -15,73 +17,54 @@ interface SubscriptionFormValues {
 const today = new Date();
 const defaultStartDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14);
 
-// Main form component
+/**
+ * Main form component for adding a subscription
+ */
 export default function Command() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleSubmit, itemProps } = useForm<SubscriptionFormValues>({
     initialValues: {
       subscription: "",
-      priority: "Low",
+      useCase: "Work",
       billingCycle: "Monthly",
-      status: ["Trial"],
+      status: "Trial",
       price: "",
       startDate: defaultStartDate,
     },
     validation: {
       subscription: FormValidation.Required,
-      price: (value) => {
-        if (!value) return "Price is required";
-        const num = Number(value);
-        if (isNaN(num) || num <= 0) return "Price must be a positive number";
-      },
-      startDate: (value) => {
-        if (!value) return "Start date is required";
-      },
+      price: validatePrice,
+      startDate: validateStartDate,
       billingCycle: FormValidation.Required,
-      status: (value: string[] | undefined) => {
-        if (!value || value.length === 0) return "Please select at least one status.";
-      },
-      priority: FormValidation.Required,
+      status: validateStatus,
+      useCase: FormValidation.Required,
     },
-    async onSubmit(values) {
-      // Format values for Notion API
-      const formattedValues = { ...values, price: Number(values.price) };
-      try {
-        // Create a new page in Notion using the API helper from utils
-        const { createSubscriptionPage } = await import("./notion-utils/createSubscriptionPage");
-        await createSubscriptionPage(formattedValues);
-        showToast({
-          style: Toast.Style.Success,
-          title: "Subscription added",
-          message: `${values.subscription} added to Notion.`,
-        });
-      } catch (error) {
-        showToast({
-          style: Toast.Style.Failure,
-          title: "Failed to add subscription",
-          message: String(error),
-        });
-      }
-      console.log(formattedValues);
-    },
+    onSubmit: (values) => handleAddSubscription(values, setIsSubmitting),
   });
 
   return (
     <Form
+      isLoading={isSubmitting}
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="Add subscription" onSubmit={handleSubmit} />
+          <Action.SubmitForm
+            title={isSubmitting ? "Submitting..." : "Add subscription"}
+            onSubmit={handleSubmit}
+          />
         </ActionPanel>
       }
     >
       <SubscriptionDetailsSection itemProps={itemProps} />
       <PaymentDetailsSection itemProps={itemProps} />
       <StatusSection itemProps={itemProps} />
-      <PrioritySection itemProps={itemProps} />
+      <UseCaseSection itemProps={itemProps} />
     </Form>
   );
 }
 
-// Section: Subscription name
+/**
+ * Section: Subscription name
+ */
 function SubscriptionDetailsSection({ itemProps }: { itemProps: any }) {
   return (
     <>
@@ -91,7 +74,9 @@ function SubscriptionDetailsSection({ itemProps }: { itemProps: any }) {
   );
 }
 
-// Section: Payment details
+/**
+ * Section: Payment details
+ */
 function PaymentDetailsSection({ itemProps }: { itemProps: any }) {
   return (
     <>
@@ -111,26 +96,30 @@ function PaymentDetailsSection({ itemProps }: { itemProps: any }) {
   );
 }
 
-// Section: Status with TagPicker
+/**
+ * Section: Status with Dropdown
+ */
 function StatusSection({ itemProps }: { itemProps: any }) {
   return (
     <>
       <Form.Description text="Status & relevance" />
-      <Form.TagPicker title="Status" {...itemProps.status}>
-        <Form.TagPicker.Item value="Active" title="Active" icon={{ source: Icon.CheckCircle, tintColor: Color.Green }} />
-        <Form.TagPicker.Item value="Trial" title="On trial" icon={{ source: Icon.Clock, tintColor: Color.Yellow }} />
-        <Form.TagPicker.Item value="Inactive" title="Not in use" icon={{ source: Icon.CircleDisabled }} />
-      </Form.TagPicker>
+      <Form.Dropdown title="Status" {...itemProps.status}>
+        <Form.Dropdown.Item value="Active" title="Active" icon={Icon.CheckCircle} />
+        <Form.Dropdown.Item value="Trial" title="Trial" icon={Icon.Clock} />
+        <Form.Dropdown.Item value="Inactive" title="Inactive" icon={Icon.CircleDisabled} />
+      </Form.Dropdown>
     </>
   );
 }
 
-// Section: Priority dropdown
-function PrioritySection({ itemProps }: { itemProps: any }) {
+/**
+ * Section: Use case dropdown
+ */
+function UseCaseSection({ itemProps }: { itemProps: any }) {
   return (
-    <Form.Dropdown title="Priority" {...itemProps.priority}>
-      <Form.Dropdown.Item value="High" title="High" />
-      <Form.Dropdown.Item value="Low" title="Low" />
+    <Form.Dropdown title="Use case" {...itemProps.useCase}>
+      <Form.Dropdown.Item value="Work" title="Work" />
+      <Form.Dropdown.Item value="Personal" title="Personal" />
     </Form.Dropdown>
   );
 }
